@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import {
-  deriveStableNumericUserId,
   getCurrentUser,
   getSupabaseAuthClient,
   signInWithPassword,
@@ -14,7 +13,10 @@ const authEnabled = import.meta.env.VITE_AUTH_ENABLED === 'true';
 const supabaseURL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 const supabaseGuestUserIdRaw = import.meta.env.VITE_SUPABASE_GUEST_USER_ID as string | undefined;
-const supabaseGuestUserId = Number.parseInt(supabaseGuestUserIdRaw ?? '1', 10);
+const supabaseGuestUserId =
+  supabaseGuestUserIdRaw && supabaseGuestUserIdRaw.trim().length > 0
+    ? supabaseGuestUserIdRaw.trim()
+    : '00000000-0000-0000-0000-000000000001';
 
 const isSupabaseAuthActive = backendMode === 'supabase' && authEnabled && !!supabaseURL && !!supabaseAnonKey;
 const supabaseAuthClient =
@@ -31,10 +33,9 @@ const user = ref<{ id: string; email: string } | null>(null);
 
 const identityLabel = computed(() => {
   if (user.value) {
-    return `${user.value.email} (uid:${deriveStableNumericUserId(user.value.id)})`;
+    return `${user.value.email} (${user.value.id})`;
   }
-  const guestId = Number.isNaN(supabaseGuestUserId) ? 1 : supabaseGuestUserId;
-  return `游客模式 guest-${guestId}`;
+  return `游客模式 ${supabaseGuestUserId}`;
 });
 
 async function refreshUser() {

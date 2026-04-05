@@ -37,7 +37,8 @@ Required when `VITE_BACKEND_MODE=supabase`:
 Optional in supabase mode:
 
 1. `VITE_SUPABASE_GUEST_USER_ID`
-- Default value is `1`
+- Default value is `00000000-0000-0000-0000-000000000001`
+- Must be a valid UUID because `user_progress.user_id` is UUID
 - Used for guest progress row ownership in current implementation
 
 2. `VITE_AUTH_ENABLED`
@@ -50,7 +51,7 @@ Optional in supabase mode:
 - `VITE_BACKEND_MODE=supabase`
 - `VITE_SUPABASE_URL=https://<project-ref>.supabase.co`
 - `VITE_SUPABASE_ANON_KEY=<anon-key>`
-- `VITE_SUPABASE_GUEST_USER_ID=1`
+- `VITE_SUPABASE_GUEST_USER_ID=00000000-0000-0000-0000-000000000001`
 
 ## 5. Verify Configuration
 

@@ -2,7 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { createProgressStore } from '../../../../../packages/quiz-core/src/progressStore';
 import { createApiClient } from '../lib/apiClient';
-import { deriveStableNumericUserId, getCurrentUser, getSupabaseAuthClient } from '../lib/supabaseAuth';
+import { getCurrentUser, getSupabaseAuthClient } from '../lib/supabaseAuth';
 import { createSupabaseProgressClient, loadSupabaseNodeProgress } from '../lib/supabaseClient';
 import { syncProgress } from '../lib/syncBridge';
 
@@ -38,7 +38,10 @@ const authEnabled = import.meta.env.VITE_AUTH_ENABLED === 'true';
 const supabaseURL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 const supabaseGuestUserIdRaw = import.meta.env.VITE_SUPABASE_GUEST_USER_ID as string | undefined;
-const supabaseGuestUserId = Number.parseInt(supabaseGuestUserIdRaw ?? '1', 10);
+const supabaseGuestUserId =
+  supabaseGuestUserIdRaw && supabaseGuestUserIdRaw.trim().length > 0
+    ? supabaseGuestUserIdRaw.trim()
+    : '00000000-0000-0000-0000-000000000001';
 
 const apiClient = apiBaseURL ? createApiClient(apiBaseURL) : undefined;
 const supabaseClient =
@@ -46,7 +49,7 @@ const supabaseClient =
     ? createSupabaseProgressClient({
         supabaseURL,
         anonKey: supabaseAnonKey,
-        guestUserId: Number.isNaN(supabaseGuestUserId) ? 1 : supabaseGuestUserId
+        guestUserId: supabaseGuestUserId
       })
     : undefined;
 
@@ -56,7 +59,7 @@ const supabaseAuthClient =
 const activeClient = backendMode === 'supabase' ? supabaseClient : apiClient;
 
 const isSupabaseMode = backendMode === 'supabase';
-const effectiveGuestId = Number.isNaN(supabaseGuestUserId) ? 1 : supabaseGuestUserId;
+const effectiveGuestId = supabaseGuestUserId;
 
 const supabaseSyncUserToken = computed(() => {
   if (!isSupabaseMode) {
@@ -66,14 +69,14 @@ const supabaseSyncUserToken = computed(() => {
     return undefined;
   }
   if (authUser.value) {
-    return String(deriveStableNumericUserId(authUser.value.id));
+    return authUser.value.id;
   }
-  return String(effectiveGuestId);
+  return effectiveGuestId;
 });
 
 const supabaseSyncIdentityLabel = computed(() => {
   if (authUser.value) {
-    return `${authUser.value.email} (uid:${deriveStableNumericUserId(authUser.value.id)})`;
+    return `${authUser.value.email} (${authUser.value.id})`;
   }
   return `guest-${effectiveGuestId}`;
 });
@@ -110,6 +113,30 @@ const questions: QuizQuestion[] = [
     options: ['true', 'false'],
     correct: ['true'],
     explanation: 'HTTP 协议本身无状态，业务可通过 Cookie/Session 等机制补充状态。'
+  },
+  {
+    id: 'q4',
+    title: '下列哪个协议用于域名解析？',
+    type: 'single',
+    options: ['DNS', 'ARP', 'ICMP'],
+    correct: ['DNS'],
+    explanation: 'DNS 负责将域名解析为 IP 地址。'
+  },
+  {
+    id: 'q5',
+    title: '以下哪些属于应用层协议？',
+    type: 'multiple',
+    options: ['HTTP', 'SMTP', 'TCP'],
+    correct: ['HTTP', 'SMTP'],
+    explanation: 'HTTP 和 SMTP 属于应用层，TCP 属于传输层。'
+  },
+  {
+    id: 'q6',
+    title: 'HTTPS 相比 HTTP 的核心增强是加密传输。',
+    type: 'boolean',
+    options: ['true', 'false'],
+    correct: ['true'],
+    explanation: 'HTTPS 在 HTTP 基础上引入 TLS，提供机密性和完整性。'
   }
 ];
 
@@ -208,7 +235,7 @@ async function loadProgressFromCloud() {
   }
 
   await refreshSupabaseUser();
-  const userId = authUser.value ? deriveStableNumericUserId(authUser.value.id) : effectiveGuestId;
+  const userId = authUser.value ? authUser.value.id : effectiveGuestId;
   const cloudProgress = await loadSupabaseNodeProgress({
     supabaseURL,
     anonKey: supabaseAnonKey,

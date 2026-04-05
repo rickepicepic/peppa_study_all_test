@@ -4,13 +4,13 @@ import type { ApiClient, SyncProgressItem, SyncProgressResponse } from './apiCli
 interface SupabaseClientOptions {
   supabaseURL: string;
   anonKey: string;
-  guestUserId: number;
+  guestUserId: string;
 }
 
 interface SupabaseReadOptions {
   supabaseURL: string;
   anonKey: string;
-  userId: number;
+  userId: string;
   nodeId: string;
   subject?: string;
 }
@@ -59,8 +59,7 @@ export function createSupabaseProgressClient(options: SupabaseClientOptions): Ap
         return { merged: 0, items: [] };
       }
 
-      const tokenUserId = Number.parseInt(token ?? '', 10);
-      const userID = Number.isNaN(tokenUserId) ? options.guestUserId : tokenUserId;
+      const userID = token && token.trim().length > 0 ? token : options.guestUserId;
 
       const rows = items.map((item) => ({
         user_id: userID,
