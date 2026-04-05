@@ -28,6 +28,7 @@ const answers = reactive<Record<string, string[]>>({});
 const lastProgressAt = ref<string | null>(null);
 const syncStatus = ref<'idle' | 'local' | 'cloud' | 'failed'>('idle');
 const syncErrorMessage = ref('');
+const syncDebugMessage = ref('');
 const authUser = ref<{ id: string; email: string } | null>(null);
 const authAccessToken = ref<string | undefined>(undefined);
 
@@ -63,6 +64,16 @@ const activeClient = backendMode === 'supabase' ? supabaseClient : apiClient;
 
 const isSupabaseMode = backendMode === 'supabase';
 const effectiveGuestId = supabaseGuestUserId;
+const supabaseProjectLabel = computed(() => {
+  if (!supabaseURL) {
+    return '未配置';
+  }
+  try {
+    return new URL(supabaseURL).host;
+  } catch {
+    return supabaseURL;
+  }
+});
 
 const supabaseSyncIdentityLabel = computed(() => {
   if (authUser.value) {
@@ -183,6 +194,7 @@ async function submitQuiz() {
   }
   submitted.value = true;
   syncErrorMessage.value = '';
+  syncDebugMessage.value = '';
   const updatedAt = new Date().toISOString();
   progressStore.saveNodeProgress(panelId.value, {
     completed: true,
@@ -214,6 +226,7 @@ async function submitQuiz() {
       client: activeClient
     });
     syncStatus.value = result.mode;
+    syncDebugMessage.value = `sync mode=${result.mode}, merged=${result.merged}`;
     if (result.mode === 'local') {
       if (result.reason === 'auth-required') {
         syncStatus.value = 'failed';
@@ -295,6 +308,7 @@ watch(panelId, async () => {
     <section v-if="isSupabaseMode" class="auth-panel">
       <h3 class="auth-title">账号状态</h3>
       <p class="progress-hint">当前同步身份：{{ supabaseSyncIdentityLabel }}</p>
+      <p class="progress-hint">当前 Supabase 项目：{{ supabaseProjectLabel }}</p>
       <p v-if="authEnabled && !authUser" class="progress-hint">请在右上角使用登录入口后再提交测验进行云端同步。</p>
     </section>
     <p v-if="lastProgressAt" class="progress-hint">最近完成时间：{{ lastProgressAt }}</p>
@@ -302,6 +316,7 @@ watch(panelId, async () => {
     <p v-if="syncStatus === 'cloud'" class="progress-hint">已同步到云端进度</p>
     <p v-if="syncStatus === 'failed'" class="progress-hint">云端同步失败，已保留本地进度</p>
     <p v-if="syncErrorMessage" class="progress-hint">错误详情：{{ syncErrorMessage }}</p>
+    <p v-if="syncDebugMessage" class="progress-hint">同步详情：{{ syncDebugMessage }}</p>
 
     <button v-if="!started" class="action" type="button" @click="startQuiz">开始测验</button>
 

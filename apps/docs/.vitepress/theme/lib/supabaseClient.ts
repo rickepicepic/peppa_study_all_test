@@ -95,6 +95,27 @@ export function createSupabaseProgressClient(options: SupabaseClientOptions): Ap
         throw new Error(`supabase sync failed: ${error.message}`);
       }
 
+      const firstNodeId = items[0]?.nodeId;
+      if (firstNodeId) {
+        const { data: verifyRow, error: verifyError } = await supabase
+          .from('user_progress')
+          .select('user_id, node_id, updated_at')
+          .eq('user_id', userID)
+          .eq('subject', 'network')
+          .eq('node_id', firstNodeId)
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (verifyError) {
+          throw new Error(`supabase verify failed: ${verifyError.message}`);
+        }
+
+        if (!verifyRow) {
+          throw new Error('supabase verify failed: write acknowledged but no row is visible');
+        }
+      }
+
       return {
         merged: items.length,
         items: items.map((item) => ({
