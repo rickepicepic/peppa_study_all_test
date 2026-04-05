@@ -15,7 +15,7 @@ export default defineConfig({
           text: '体系化主线',
           items: [
             { text: '概览', link: '/network/system/' },
-            { text: 'TCP 三次握手', link: '/content/network/system/tcp-basic' }
+            { text: 'TCP 三次握手（含测验）', link: '/network/system/tcp-handshake' }
           ]
         }
       ],

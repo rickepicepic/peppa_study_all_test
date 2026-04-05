@@ -27,6 +27,7 @@ const submitted = ref(false);
 const answers = reactive<Record<string, string[]>>({});
 const lastProgressAt = ref<string | null>(null);
 const syncStatus = ref<'idle' | 'local' | 'cloud' | 'failed'>('idle');
+const syncErrorMessage = ref('');
 const authUser = ref<{ id: string; email: string } | null>(null);
 
 const backendMode = (import.meta.env.VITE_BACKEND_MODE as string | undefined) ?? 'local';
@@ -38,8 +39,9 @@ const authEnabled = import.meta.env.VITE_AUTH_ENABLED === 'true';
 const supabaseURL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 const supabaseGuestUserIdRaw = import.meta.env.VITE_SUPABASE_GUEST_USER_ID as string | undefined;
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const supabaseGuestUserId =
-  supabaseGuestUserIdRaw && supabaseGuestUserIdRaw.trim().length > 0
+  supabaseGuestUserIdRaw && uuidPattern.test(supabaseGuestUserIdRaw.trim())
     ? supabaseGuestUserIdRaw.trim()
     : '00000000-0000-0000-0000-000000000001';
 
@@ -189,6 +191,7 @@ async function submitQuiz() {
     await refreshSupabaseUser();
   }
   submitted.value = true;
+  syncErrorMessage.value = '';
   const updatedAt = new Date().toISOString();
   progressStore.saveNodeProgress(panelId.value, {
     completed: true,
@@ -217,8 +220,9 @@ async function submitQuiz() {
       client: activeClient
     });
     syncStatus.value = result.mode;
-  } catch {
+  } catch (error) {
     syncStatus.value = 'failed';
+    syncErrorMessage.value = error instanceof Error ? error.message : '未知同步错误';
   }
 }
 
@@ -283,6 +287,7 @@ watch(panelId, async () => {
     <p v-if="syncStatus === 'local'" class="progress-hint">当前为本地进度模式</p>
     <p v-if="syncStatus === 'cloud'" class="progress-hint">已同步到云端进度</p>
     <p v-if="syncStatus === 'failed'" class="progress-hint">云端同步失败，已保留本地进度</p>
+    <p v-if="syncErrorMessage" class="progress-hint">错误详情：{{ syncErrorMessage }}</p>
 
     <button v-if="!started" class="action" type="button" @click="startQuiz">开始测验</button>
 
