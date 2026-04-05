@@ -2,11 +2,52 @@
   --vp-c-brand-1: #0b8f66;
   --vp-c-brand-2: #087353;
   --vp-c-brand-3: #05553d;
+  --nfp-home-glow: radial-gradient(circle at 20% 20%, rgba(11, 143, 102, 0.24), rgba(11, 143, 102, 0));
+  --nfp-home-grid: linear-gradient(rgba(7, 27, 37, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(7, 27, 37, 0.08) 1px, transparent 1px);
+}
+
+body {
+  font-family: 'IBM Plex Sans', 'Source Han Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+
+.VPHome {
+  position: relative;
+}
+
+.VPHome::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--nfp-home-glow), var(--nfp-home-grid);
+  background-size: auto, 24px 24px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.VPHomeHero {
+  padding-top: 26px;
 }
 
 .VPHomeHero .name,
 .VPHomeHero .text {
   letter-spacing: 0.01em;
+}
+
+.VPHomeHero .text {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+}
+
+.VPFeature {
+  border: 1px solid color-mix(in srgb, var(--vp-c-brand-1) 25%, var(--vp-c-divider));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--vp-c-bg-soft) 84%, var(--vp-c-brand-1) 16%);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.VPFeature:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(5, 45, 34, 0.14);
 }
 
 .global-auth {
