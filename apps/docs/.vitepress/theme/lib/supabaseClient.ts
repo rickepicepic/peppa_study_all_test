@@ -16,13 +16,16 @@ export function createSupabaseProgressClient(options: SupabaseClientOptions): Ap
   });
 
   return {
-    async syncProgress(items: SyncProgressItem[]): Promise<SyncProgressResponse> {
+    async syncProgress(items: SyncProgressItem[], _mergeToken: string, token?: string): Promise<SyncProgressResponse> {
       if (items.length === 0) {
         return { merged: 0, items: [] };
       }
 
+      const tokenUserId = Number.parseInt(token ?? '', 10);
+      const userID = Number.isNaN(tokenUserId) ? options.guestUserId : tokenUserId;
+
       const rows = items.map((item) => ({
-        user_id: options.guestUserId,
+        user_id: userID,
         subject: 'network',
         node_id: item.nodeId,
         completed: item.completed,

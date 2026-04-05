@@ -2,6 +2,13 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { createProgressStore } from '../../../../../packages/quiz-core/src/progressStore';
 import { createApiClient } from '../lib/apiClient';
+import {
+  deriveStableNumericUserId,
+  getCurrentUser,
+  getSupabaseAuthClient,
+  signInWithPassword,
+  signOut
+} from '../lib/supabaseAuth';
 import { createSupabaseProgressClient } from '../lib/supabaseClient';
 import { syncProgress } from '../lib/syncBridge';
 
@@ -26,6 +33,11 @@ const submitted = ref(false);
 const answers = reactive<Record<string, string[]>>({});
 const lastProgressAt = ref<string | null>(null);
 const syncStatus = ref<'idle' | 'local' | 'cloud' | 'failed'>('idle');
+const loginEmail = ref('');
+const loginPassword = ref('');
+const loginBusy = ref(false);
+const loginMessage = ref('');
+const authUser = ref<{ id: string; email: string } | null>(null);
 
 const backendMode = (import.meta.env.VITE_BACKEND_MODE as string | undefined) ?? 'local';
 const apiBaseURL = import.meta.env.VITE_API_BASE_URL as string | undefined;
@@ -48,7 +60,78 @@ const supabaseClient =
       })
     : undefined;
 
+const supabaseAuthClient =
+  supabaseURL && supabaseAnonKey ? getSupabaseAuthClient(supabaseURL, supabaseAnonKey) : undefined;
+
 const activeClient = backendMode === 'supabase' ? supabaseClient : apiClient;
+
+const isSupabaseMode = backendMode === 'supabase';
+const effectiveGuestId = Number.isNaN(supabaseGuestUserId) ? 1 : supabaseGuestUserId;
+
+const supabaseSyncUserToken = computed(() => {
+  if (!isSupabaseMode) {
+    return undefined;
+  }
+  if (authEnabled && !authUser.value) {
+    return undefined;
+  }
+  if (authUser.value) {
+    return String(deriveStableNumericUserId(authUser.value.id));
+  }
+  return String(effectiveGuestId);
+});
+
+const supabaseSyncIdentityLabel = computed(() => {
+  if (authUser.value) {
+    return `${authUser.value.email} (uid:${deriveStableNumericUserId(authUser.value.id)})`;
+  }
+  return `guest-${effectiveGuestId}`;
+});
+
+async function refreshSupabaseUser() {
+  if (!supabaseAuthClient) {
+    authUser.value = null;
+    return;
+  }
+  authUser.value = await getCurrentUser(supabaseAuthClient);
+}
+
+async function handleSupabaseLogin() {
+  if (!supabaseAuthClient || !loginEmail.value || !loginPassword.value) {
+    loginMessage.value = '请输入邮箱与密码。';
+    return;
+  }
+  loginBusy.value = true;
+  loginMessage.value = '';
+  try {
+    await signInWithPassword(supabaseAuthClient, loginEmail.value, loginPassword.value);
+    await refreshSupabaseUser();
+    loginPassword.value = '';
+    loginMessage.value = '登录成功，后续进度将写入数据库。';
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : '登录失败';
+    loginMessage.value = msg;
+  } finally {
+    loginBusy.value = false;
+  }
+}
+
+async function handleSupabaseLogout() {
+  if (!supabaseAuthClient) {
+    return;
+  }
+  loginBusy.value = true;
+  try {
+    await signOut(supabaseAuthClient);
+    authUser.value = null;
+    loginMessage.value = '已退出登录。';
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : '退出失败';
+    loginMessage.value = msg;
+  } finally {
+    loginBusy.value = false;
+  }
+}
 
 const questions: QuizQuestion[] = [
   {
@@ -142,7 +225,12 @@ async function submitQuiz() {
         }
       ],
       mergeToken: `${panelId.value}-${updatedAt}`,
-      token: authEnabled ? localStorage.getItem('nfp-auth-token') ?? undefined : undefined,
+      token:
+        backendMode === 'supabase'
+          ? supabaseSyncUserToken.value
+          : authEnabled
+            ? localStorage.getItem('nfp-auth-token') ?? undefined
+            : undefined,
       client: activeClient
     });
     syncStatus.value = result.mode;
@@ -158,7 +246,12 @@ function loadProgress() {
   lastProgressAt.value = progress?.updatedAt ?? null;
 }
 
-onMounted(loadProgress);
+onMounted(async () => {
+  loadProgress();
+  if (isSupabaseMode) {
+    await refreshSupabaseUser();
+  }
+});
 watch(panelId, loadProgress);
 </script>
 
@@ -166,6 +259,26 @@ watch(panelId, loadProgress);
   <section class="quiz-panel" :data-quiz-id="panelId">
     <h2>小测验</h2>
     <p class="hint">支持单选、多选、判断。提交后可查看解析。</p>
+    <section v-if="isSupabaseMode" class="auth-panel">
+      <h3 class="auth-title">账号状态</h3>
+      <p class="progress-hint">当前同步身份：{{ supabaseSyncIdentityLabel }}</p>
+
+      <div v-if="authEnabled && !authUser" class="auth-form">
+        <input v-model="loginEmail" type="email" placeholder="邮箱" class="auth-input" />
+        <input v-model="loginPassword" type="password" placeholder="密码" class="auth-input" />
+        <button class="action" type="button" :disabled="loginBusy" @click="handleSupabaseLogin">
+          {{ loginBusy ? '登录中...' : '登录' }}
+        </button>
+      </div>
+
+      <div v-if="authEnabled && authUser" class="auth-form">
+        <button class="action" type="button" :disabled="loginBusy" @click="handleSupabaseLogout">
+          {{ loginBusy ? '处理中...' : '退出登录' }}
+        </button>
+      </div>
+
+      <p v-if="loginMessage" class="progress-hint">{{ loginMessage }}</p>
+    </section>
     <p v-if="lastProgressAt" class="progress-hint">最近完成时间：{{ lastProgressAt }}</p>
     <p v-if="syncStatus === 'local'" class="progress-hint">当前为本地进度模式</p>
     <p v-if="syncStatus === 'cloud'" class="progress-hint">已同步到云端进度</p>
@@ -227,6 +340,30 @@ watch(panelId, loadProgress);
 
 .hint {
   margin-bottom: 12px;
+}
+
+.auth-panel {
+  border: 1px dashed var(--vp-c-divider);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.auth-title {
+  margin: 0 0 8px;
+}
+
+.auth-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.auth-input {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 6px 8px;
 }
 
 .progress-hint {

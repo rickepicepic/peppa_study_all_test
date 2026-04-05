@@ -40,6 +40,11 @@ Optional in supabase mode:
 - Default value is `1`
 - Used for guest progress row ownership in current implementation
 
+2. `VITE_AUTH_ENABLED`
+- Value: `true` or `false`
+- Set `true` to enable email/password login UI on the quiz panel
+- Set `false` to keep guest sync only
+
 ## 4. Recommended Initial Values (Supabase)
 
 - `VITE_BACKEND_MODE=supabase`
