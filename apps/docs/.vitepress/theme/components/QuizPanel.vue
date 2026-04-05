@@ -1,0 +1,256 @@
+<script setup lang="ts">
+import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { createProgressStore } from '../../../../../packages/quiz-core/src/progressStore';
+import { createApiClient } from '../lib/apiClient';
+import { syncProgress } from '../lib/syncBridge';
+
+type QuizType = 'single' | 'multiple' | 'boolean';
+
+interface QuizQuestion {
+  id: string;
+  title: string;
+  type: QuizType;
+  options: string[];
+  correct: string[];
+  explanation: string;
+}
+
+const props = defineProps<{
+  quizId?: string;
+}>();
+
+const progressStore = createProgressStore('nfp-guest');
+const started = ref(false);
+const submitted = ref(false);
+const answers = reactive<Record<string, string[]>>({});
+const lastProgressAt = ref<string | null>(null);
+const syncStatus = ref<'idle' | 'local' | 'cloud' | 'failed'>('idle');
+
+const apiBaseURL = import.meta.env.VITE_API_BASE_URL as string | undefined;
+const apiEnabled = import.meta.env.VITE_API_ENABLED === 'true' && !!apiBaseURL;
+const authEnabled = import.meta.env.VITE_AUTH_ENABLED === 'true';
+const apiClient = apiBaseURL ? createApiClient(apiBaseURL) : undefined;
+
+const questions: QuizQuestion[] = [
+  {
+    id: 'q1',
+    title: 'TCP 三次握手中，第二次报文通常包含什么标志位？',
+    type: 'single',
+    options: ['A', 'B', 'C'],
+    correct: ['B'],
+    explanation: '服务端回复 SYN + ACK，确认客户端初始序号并同步自己的初始序号。'
+  },
+  {
+    id: 'q2',
+    title: '以下哪些属于传输层协议？',
+    type: 'multiple',
+    options: ['TCP', 'UDP', 'IP'],
+    correct: ['TCP', 'UDP'],
+    explanation: 'TCP 和 UDP 属于传输层，IP 属于网络层。'
+  },
+  {
+    id: 'q3',
+    title: 'HTTP 一定是无状态协议。',
+    type: 'boolean',
+    options: ['true', 'false'],
+    correct: ['true'],
+    explanation: 'HTTP 协议本身无状态，业务可通过 Cookie/Session 等机制补充状态。'
+  }
+];
+
+function startQuiz() {
+  started.value = true;
+  submitted.value = false;
+  for (const key of Object.keys(answers)) {
+    delete answers[key];
+  }
+}
+
+function toggleSingle(questionId: string, option: string) {
+  answers[questionId] = [option];
+}
+
+function toggleMultiple(questionId: string, option: string, checked: boolean) {
+  const current = new Set(answers[questionId] ?? []);
+  if (checked) {
+    current.add(option);
+  } else {
+    current.delete(option);
+  }
+  answers[questionId] = [...current];
+}
+
+function normalize(values: string[]) {
+  return [...values].sort().join('|');
+}
+
+const details = computed(() => {
+  return questions.map((question) => {
+    const user = answers[question.id] ?? [];
+    return {
+      id: question.id,
+      title: question.title,
+      isCorrect: normalize(user) === normalize(question.correct),
+      explanation: question.explanation,
+      correct: question.correct.join(', '),
+      user: user.join(', ') || '(未作答)'
+    };
+  });
+});
+
+const correctCount = computed(() => details.value.filter((item) => item.isCorrect).length);
+const total = computed(() => questions.length);
+const score = computed(() => (total.value === 0 ? 0 : Math.round((correctCount.value / total.value) * 100)));
+
+async function submitQuiz() {
+  submitted.value = true;
+  const updatedAt = new Date().toISOString();
+  progressStore.saveNodeProgress(panelId.value, {
+    completed: true,
+    updatedAt
+  });
+  lastProgressAt.value = updatedAt;
+
+  try {
+    const result = await syncProgress({
+      apiEnabled,
+      authEnabled,
+      localItems: [
+        {
+          nodeId: panelId.value,
+          completed: true,
+          updatedAt
+        }
+      ],
+      mergeToken: `${panelId.value}-${updatedAt}`,
+      token: authEnabled ? localStorage.getItem('nfp-auth-token') ?? undefined : undefined,
+      client: apiClient
+    });
+    syncStatus.value = result.mode;
+  } catch {
+    syncStatus.value = 'failed';
+  }
+}
+
+const panelId = computed(() => props.quizId ?? 'quiz-panel-default');
+
+function loadProgress() {
+  const progress = progressStore.getNodeProgress(panelId.value);
+  lastProgressAt.value = progress?.updatedAt ?? null;
+}
+
+onMounted(loadProgress);
+watch(panelId, loadProgress);
+</script>
+
+<template>
+  <section class="quiz-panel" :data-quiz-id="panelId">
+    <h2>小测验</h2>
+    <p class="hint">支持单选、多选、判断。提交后可查看解析。</p>
+    <p v-if="lastProgressAt" class="progress-hint">最近完成时间：{{ lastProgressAt }}</p>
+    <p v-if="syncStatus === 'local'" class="progress-hint">当前为本地进度模式</p>
+    <p v-if="syncStatus === 'cloud'" class="progress-hint">已同步到云端进度</p>
+    <p v-if="syncStatus === 'failed'" class="progress-hint">云端同步失败，已保留本地进度</p>
+
+    <button v-if="!started" class="action" type="button" @click="startQuiz">开始测验</button>
+
+    <form v-else class="quiz-form" @submit.prevent="submitQuiz">
+      <fieldset v-for="question in questions" :key="question.id" class="question">
+        <legend>{{ question.title }}</legend>
+
+        <label v-for="option in question.options" :key="`${question.id}-${option}`" class="option">
+          <input
+            v-if="question.type === 'single' || question.type === 'boolean'"
+            :name="question.id"
+            type="radio"
+            :value="option"
+            :checked="(answers[question.id] ?? []).includes(option)"
+            @change="toggleSingle(question.id, option)"
+          />
+          <input
+            v-else
+            :name="`${question.id}-${option}`"
+            type="checkbox"
+            :value="option"
+            :checked="(answers[question.id] ?? []).includes(option)"
+            @change="toggleMultiple(question.id, option, ($event.target as HTMLInputElement).checked)"
+          />
+          <span>{{ option }}</span>
+        </label>
+      </fieldset>
+
+      <button class="action" type="submit">提交</button>
+    </form>
+
+    <section v-if="submitted" class="result" aria-live="polite">
+      <h3>结果</h3>
+      <p>得分：{{ score }}（{{ correctCount }}/{{ total }}）</p>
+
+      <h3>解析</h3>
+      <article v-for="item in details" :key="item.id" class="analysis-item">
+        <p><strong>{{ item.title }}</strong></p>
+        <p>你的答案：{{ item.user }}</p>
+        <p>正确答案：{{ item.correct }}</p>
+        <p>判定：{{ item.isCorrect ? '正确' : '错误' }}</p>
+        <p>解析：{{ item.explanation }}</p>
+      </article>
+    </section>
+  </section>
+</template>
+
+<style scoped>
+.quiz-panel {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.hint {
+  margin-bottom: 12px;
+}
+
+.progress-hint {
+  margin-bottom: 12px;
+  color: var(--vp-c-text-2);
+  font-size: 0.9rem;
+}
+
+.quiz-form {
+  display: grid;
+  gap: 12px;
+}
+
+.question {
+  border: 1px dashed var(--vp-c-divider);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+}
+
+.action {
+  width: fit-content;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--vp-c-divider);
+}
+
+.result {
+  margin-top: 16px;
+  border-top: 1px solid var(--vp-c-divider);
+  padding-top: 12px;
+}
+
+.analysis-item {
+  margin: 12px 0;
+  padding: 8px 10px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+}
+</style>

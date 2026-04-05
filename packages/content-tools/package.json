@@ -1,0 +1,11 @@
+{
+  "name": "@nfp/content-tools",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "lint": "echo \"lint: content-tools not configured yet\""
+  }
+}

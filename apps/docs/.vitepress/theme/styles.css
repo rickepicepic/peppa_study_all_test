@@ -1,0 +1,10 @@
+:root {
+  --vp-c-brand-1: #0b8f66;
+  --vp-c-brand-2: #087353;
+  --vp-c-brand-3: #05553d;
+}
+
+.VPHomeHero .name,
+.VPHomeHero .text {
+  letter-spacing: 0.01em;
+}

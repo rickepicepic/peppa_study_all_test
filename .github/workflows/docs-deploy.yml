@@ -1,0 +1,96 @@
+name: docs-deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/docs/**"
+      - "packages/**"
+      - "tests/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "tsconfig.base.json"
+      - ".github/workflows/docs-deploy.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.6.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Validate deploy variables
+        env:
+          VITE_API_ENABLED: ${{ vars.VITE_API_ENABLED }}
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_AUTH_ENABLED: ${{ vars.VITE_AUTH_ENABLED }}
+        run: |
+          if [ -z "$VITE_API_ENABLED" ]; then
+            echo "VITE_API_ENABLED is not configured in repository variables"
+            exit 1
+          fi
+          if [ "$VITE_API_ENABLED" = "true" ] && [ -z "$VITE_API_BASE_URL" ]; then
+            echo "VITE_API_BASE_URL is required when VITE_API_ENABLED=true"
+            exit 1
+          fi
+          if [ -z "$VITE_AUTH_ENABLED" ]; then
+            echo "VITE_AUTH_ENABLED is not configured in repository variables"
+            exit 1
+          fi
+
+      - name: Build docs
+        env:
+          VITE_API_ENABLED: ${{ vars.VITE_API_ENABLED }}
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_AUTH_ENABLED: ${{ vars.VITE_AUTH_ENABLED }}
+        run: pnpm --filter @nfp/docs build
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/docs/.vitepress/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

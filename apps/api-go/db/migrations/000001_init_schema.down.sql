@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS progress_merge_logs;
+DROP TABLE IF EXISTS user_wrong_questions;
+DROP TABLE IF EXISTS attempt_answers;
+DROP TABLE IF EXISTS user_quiz_attempts;
+DROP TABLE IF EXISTS user_progress;
+DROP TABLE IF EXISTS question_options;
+DROP TABLE IF EXISTS quiz_questions;
+DROP TABLE IF EXISTS quizzes;
+DROP TABLE IF EXISTS subjects;
