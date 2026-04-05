@@ -25,6 +25,13 @@ export async function signInWithPassword(client: SupabaseClient, email: string, 
   }
 }
 
+export async function signUpWithPassword(client: SupabaseClient, email: string, password: string): Promise<void> {
+  const { error } = await client.auth.signUp({ email, password });
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 export async function signOut(client: SupabaseClient): Promise<void> {
   const { error } = await client.auth.signOut();
   if (error) {

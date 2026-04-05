@@ -8,3 +8,83 @@
 .VPHomeHero .text {
   letter-spacing: 0.01em;
 }
+
+.global-auth {
+  position: relative;
+  margin-left: 12px;
+}
+
+.global-auth-toggle {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: var(--vp-c-bg);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.global-auth-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 280px;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 12px;
+  background: var(--vp-c-bg);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  padding: 12px;
+  z-index: 40;
+}
+
+.global-auth-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.global-auth-desc {
+  margin: 6px 0 10px;
+  color: var(--vp-c-text-2);
+  font-size: 12px;
+}
+
+.global-auth-form {
+  display: grid;
+  gap: 8px;
+}
+
+.global-auth-input {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 13px;
+}
+
+.global-auth-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.global-auth-btn {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: var(--vp-c-bg);
+  cursor: pointer;
+}
+
+.global-auth-msg {
+  margin: 8px 0 0;
+  color: var(--vp-c-text-2);
+  font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .global-auth {
+    margin-left: 8px;
+  }
+
+  .global-auth-panel {
+    right: -16px;
+    width: min(280px, calc(100vw - 24px));
+  }
+}
