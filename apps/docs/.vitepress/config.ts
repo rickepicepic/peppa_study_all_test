@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress';
 
 export default defineConfig({
+  base: '/peppa_study_all_test/',
   title: '计算机基础学习平台',
   description: '首期：计算机网络',
   themeConfig: {
