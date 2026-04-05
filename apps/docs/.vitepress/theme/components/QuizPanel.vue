@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { createProgressStore } from '../../../../../packages/quiz-core/src/progressStore';
 import { createApiClient } from '../lib/apiClient';
+import { createSupabaseProgressClient } from '../lib/supabaseClient';
 import { syncProgress } from '../lib/syncBridge';
 
 type QuizType = 'single' | 'multiple' | 'boolean';
@@ -26,10 +27,28 @@ const answers = reactive<Record<string, string[]>>({});
 const lastProgressAt = ref<string | null>(null);
 const syncStatus = ref<'idle' | 'local' | 'cloud' | 'failed'>('idle');
 
+const backendMode = (import.meta.env.VITE_BACKEND_MODE as string | undefined) ?? 'local';
 const apiBaseURL = import.meta.env.VITE_API_BASE_URL as string | undefined;
-const apiEnabled = import.meta.env.VITE_API_ENABLED === 'true' && !!apiBaseURL;
+const apiEnabled =
+  (backendMode === 'api' || (import.meta.env.VITE_API_ENABLED === 'true' && backendMode !== 'supabase')) &&
+  !!apiBaseURL;
 const authEnabled = import.meta.env.VITE_AUTH_ENABLED === 'true';
+const supabaseURL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+const supabaseGuestUserIdRaw = import.meta.env.VITE_SUPABASE_GUEST_USER_ID as string | undefined;
+const supabaseGuestUserId = Number.parseInt(supabaseGuestUserIdRaw ?? '1', 10);
+
 const apiClient = apiBaseURL ? createApiClient(apiBaseURL) : undefined;
+const supabaseClient =
+  supabaseURL && supabaseAnonKey
+    ? createSupabaseProgressClient({
+        supabaseURL,
+        anonKey: supabaseAnonKey,
+        guestUserId: Number.isNaN(supabaseGuestUserId) ? 1 : supabaseGuestUserId
+      })
+    : undefined;
+
+const activeClient = backendMode === 'supabase' ? supabaseClient : apiClient;
 
 const questions: QuizQuestion[] = [
   {
@@ -113,7 +132,7 @@ async function submitQuiz() {
 
   try {
     const result = await syncProgress({
-      apiEnabled,
+      apiEnabled: backendMode === 'supabase' ? !!supabaseClient : apiEnabled,
       authEnabled,
       localItems: [
         {
@@ -124,7 +143,7 @@ async function submitQuiz() {
       ],
       mergeToken: `${panelId.value}-${updatedAt}`,
       token: authEnabled ? localStorage.getItem('nfp-auth-token') ?? undefined : undefined,
-      client: apiClient
+      client: activeClient
     });
     syncStatus.value = result.mode;
   } catch {

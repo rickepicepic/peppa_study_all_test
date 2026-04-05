@@ -3,30 +3,55 @@
 Configure these repository variables in:
 - GitHub Repository -> Settings -> Secrets and variables -> Actions -> Variables
 
-## Required Variables
+## 1. Base Variable (Always Required)
 
-1. `VITE_API_ENABLED`
-- Value: `true` (production API mode) or `false` (local-only mode)
+1. `VITE_BACKEND_MODE`
+- Allowed values: `local`, `api`, `supabase`
 
-2. `VITE_API_BASE_URL`
-- Required when `VITE_API_ENABLED=true`
+## 2. API Mode Variables
+
+Required when `VITE_BACKEND_MODE=api`:
+
+1. `VITE_API_BASE_URL`
 - Example: `https://api.example.com`
 
-3. `VITE_AUTH_ENABLED`
+Optional in api mode:
+
+1. `VITE_API_ENABLED`
+- Compatibility flag for legacy flow
+- Recommended: `true`
+
+2. `VITE_AUTH_ENABLED`
 - Value: `true` or `false`
-- Use `false` if login/auth is not enabled in production yet
 
-## Recommended Initial Values
+## 3. Supabase Mode Variables
 
-- `VITE_API_ENABLED=true`
-- `VITE_API_BASE_URL=https://api.your-domain.com`
-- `VITE_AUTH_ENABLED=false`
+Required when `VITE_BACKEND_MODE=supabase`:
 
-## Verify Configuration
+1. `VITE_SUPABASE_URL`
+- Example: `https://<project-ref>.supabase.co`
+
+2. `VITE_SUPABASE_ANON_KEY`
+- Public anon key from Supabase project settings
+
+Optional in supabase mode:
+
+1. `VITE_SUPABASE_GUEST_USER_ID`
+- Default value is `1`
+- Used for guest progress row ownership in current implementation
+
+## 4. Recommended Initial Values (Supabase)
+
+- `VITE_BACKEND_MODE=supabase`
+- `VITE_SUPABASE_URL=https://<project-ref>.supabase.co`
+- `VITE_SUPABASE_ANON_KEY=<anon-key>`
+- `VITE_SUPABASE_GUEST_USER_ID=1`
+
+## 5. Verify Configuration
 
 After setting variables:
 
-1. Trigger workflow [network-learning-platform/.github/workflows/docs-deploy.yml](network-learning-platform/.github/workflows/docs-deploy.yml)
+1. Trigger workflow [.github/workflows/docs-deploy.yml](.github/workflows/docs-deploy.yml)
 2. Confirm `Validate deploy variables` step passes
 3. Confirm docs build and deploy steps succeed
 

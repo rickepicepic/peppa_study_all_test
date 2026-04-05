@@ -51,28 +51,48 @@ jobs:
 
       - name: Validate deploy variables
         env:
+          VITE_BACKEND_MODE: ${{ vars.VITE_BACKEND_MODE }}
           VITE_API_ENABLED: ${{ vars.VITE_API_ENABLED }}
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
           VITE_AUTH_ENABLED: ${{ vars.VITE_AUTH_ENABLED }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_GUEST_USER_ID: ${{ vars.VITE_SUPABASE_GUEST_USER_ID }}
         run: |
-          if [ -z "$VITE_API_ENABLED" ]; then
-            echo "VITE_API_ENABLED is not configured in repository variables"
+          if [ -z "$VITE_BACKEND_MODE" ]; then
+            echo "VITE_BACKEND_MODE is not configured in repository variables"
             exit 1
           fi
-          if [ "$VITE_API_ENABLED" = "true" ] && [ -z "$VITE_API_BASE_URL" ]; then
-            echo "VITE_API_BASE_URL is required when VITE_API_ENABLED=true"
+
+          if [ "$VITE_BACKEND_MODE" = "api" ] && [ -z "$VITE_API_BASE_URL" ]; then
+            echo "VITE_API_BASE_URL is required when VITE_BACKEND_MODE=api"
             exit 1
           fi
-          if [ -z "$VITE_AUTH_ENABLED" ]; then
-            echo "VITE_AUTH_ENABLED is not configured in repository variables"
+
+          if [ "$VITE_BACKEND_MODE" = "supabase" ] && [ -z "$VITE_SUPABASE_URL" ]; then
+            echo "VITE_SUPABASE_URL is required when VITE_BACKEND_MODE=supabase"
+            exit 1
+          fi
+
+          if [ "$VITE_BACKEND_MODE" = "supabase" ] && [ -z "$VITE_SUPABASE_ANON_KEY" ]; then
+            echo "VITE_SUPABASE_ANON_KEY is required when VITE_BACKEND_MODE=supabase"
+            exit 1
+          fi
+
+          if [ "$VITE_BACKEND_MODE" != "api" ] && [ "$VITE_BACKEND_MODE" != "supabase" ] && [ "$VITE_BACKEND_MODE" != "local" ]; then
+            echo "VITE_BACKEND_MODE must be one of: local, api, supabase"
             exit 1
           fi
 
       - name: Build docs
         env:
+          VITE_BACKEND_MODE: ${{ vars.VITE_BACKEND_MODE }}
           VITE_API_ENABLED: ${{ vars.VITE_API_ENABLED }}
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
           VITE_AUTH_ENABLED: ${{ vars.VITE_AUTH_ENABLED }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_GUEST_USER_ID: ${{ vars.VITE_SUPABASE_GUEST_USER_ID }}
         run: pnpm --filter @nfp/docs build
 
       - name: Configure Pages

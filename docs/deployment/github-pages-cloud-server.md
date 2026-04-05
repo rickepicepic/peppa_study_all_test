@@ -1,68 +1,53 @@
-# GitHub Pages + Cloud Server Deployment Guide
+# GitHub Pages + Supabase Deployment Guide
 
 This runbook covers production deployment for:
 - Frontend: GitHub Pages
-- Backend API: cloud server (Go)
-- Database: MySQL (cloud server)
+- Backend data layer: Supabase (Postgres + REST)
+- Optional fallback: self-hosted Go API + MySQL
 
 ## 1. Remaining Tasks to Reach Production
 
-1. Infrastructure and domain
-- Prepare API domain (recommended: api.your-domain.com)
-- Issue TLS certificate (Let's Encrypt / cloud provider)
-- Open required ports and configure firewall
+1. Supabase project setup
+- Create project and choose region
+- Create `user_progress` table (or use existing schema)
+- Configure row-level security policies for guest write strategy
 
-2. Backend production runtime
-- Run api-go as a managed service (systemd or container)
-- Configure production env vars (`MYSQL_DSN`, `CORS_ALLOW_ORIGINS`, `JWT_SECRET`)
-- Ensure DB migrations run before first traffic
-
-3. Frontend production config
+2. Frontend production config
 - Set GitHub repository variables used by docs workflow:
-  - `VITE_API_ENABLED=true`
-  - `VITE_API_BASE_URL=https://api.your-domain.com`
-  - `VITE_AUTH_ENABLED=false` (or true when auth is enabled)
+  - `VITE_BACKEND_MODE=supabase`
+  - `VITE_SUPABASE_URL=https://<project-ref>.supabase.co`
+  - `VITE_SUPABASE_ANON_KEY=<anon-key>`
+  - `VITE_SUPABASE_GUEST_USER_ID=1` (optional, defaults to 1)
 
-4. Operational readiness
-- Add DB backup schedule
-- Add basic API monitoring and health checks
-- Add alerting for service down and high error rate
+3. Operational readiness
+- Add backup/export policy in Supabase
+- Add API request monitoring and alerting
+- Confirm CORS origin policy includes your GitHub Pages origin
 
-## 2. Backend Cloud Server Setup
+## 2. Supabase Setup
 
-## 2.1 Prepare environment
+## 2.1 Required Table
 
-Install Go 1.24+, MySQL 8, and required tools.
+Current frontend sync implementation writes into `user_progress` with columns:
 
-Create environment file (example):
+- `user_id` (bigint)
+- `subject` (text)
+- `node_id` (text)
+- `completed` (boolean)
+- `updated_at` (timestamptz)
 
-```bash
-API_HTTP_ADDR=:8080
-AUTH_ENABLED=false
-JWT_SECRET=<strong-random-secret>
-MYSQL_DSN=<user>:<password>@tcp(127.0.0.1:3306)/nlp?parseTime=true&multiStatements=true
-CORS_ALLOW_ORIGINS=https://<username>.github.io
-```
+And expects unique constraint on:
 
-## 2.2 Initialize database
+- `(user_id, subject, node_id)`
 
-Use migration files under `apps/api-go/db/migrations`.
+## 2.2 RLS Policy Notes
 
-For first-time setup, run in order:
-- `000001_init_schema.up.sql`
-- `000002_seed_subject.up.sql`
+Because the frontend currently uses anon key directly, you need policies that allow:
 
-## 2.3 Start backend
+1. upsert for the guest user id
+2. read/write only within allowed guest scope
 
-From `network-learning-platform/apps/api-go`:
-
-```bash
-go run ./cmd/server
-```
-
-Verify:
-
-- `GET /healthz` should return `storageMode=mysql`
+If you prefer stricter security, move write logic into Supabase Edge Functions and keep anon key permissions minimal.
 
 ## 3. Frontend GitHub Pages Setup
 
@@ -75,14 +60,15 @@ In GitHub repository settings:
 
 In GitHub repository settings -> Secrets and variables -> Actions -> Variables:
 
-- `VITE_API_ENABLED=true`
-- `VITE_API_BASE_URL=https://api.your-domain.com`
-- `VITE_AUTH_ENABLED=false`
+- `VITE_BACKEND_MODE=supabase`
+- `VITE_SUPABASE_URL=https://<project-ref>.supabase.co`
+- `VITE_SUPABASE_ANON_KEY=<anon-key>`
+- `VITE_SUPABASE_GUEST_USER_ID=1`
 
 Detailed variable setup guide:
-- [network-learning-platform/docs/deployment/github-actions-variables.md](network-learning-platform/docs/deployment/github-actions-variables.md)
+- [docs/deployment/github-actions-variables.md](docs/deployment/github-actions-variables.md)
 
-The workflow [network-learning-platform/.github/workflows/docs-deploy.yml](network-learning-platform/.github/workflows/docs-deploy.yml) already injects these values at build time.
+The workflow [.github/workflows/docs-deploy.yml](.github/workflows/docs-deploy.yml) validates and injects these values at build time.
 
 ## 3.3 Deploy
 
@@ -90,24 +76,15 @@ Push to `main` (or trigger workflow manually) and verify the generated Pages URL
 
 ## 4. End-to-End Validation
 
-From `apps/api-go`, run:
+1. Open one learning page with quiz panel
+2. Submit quiz once
+3. Confirm browser has no sync error
+4. Verify `user_progress` got updated in Supabase table
 
-```bash
-make smoke
-```
+## 5. Legacy Self-hosted API Option
 
-This validates:
-- mysql container up and healthy
-- migrations applied
-- api starts in mysql mode
-- progress sync and quiz submit endpoints work
-- key persistence rows exist in DB
+If you need to keep Go API path:
 
-## 5. Go-Live Checklist
-
-1. `GET /healthz` returns status ok and `storageMode=mysql`
-2. GitHub Pages frontend can call API successfully (no CORS errors)
-3. `make smoke` passes in staging/prod-like environment
-4. MySQL backups tested (restore drill at least once)
-5. JWT secret rotated from default and stored securely
-6. Monitoring/alerts active for API and DB
+1. Set `VITE_BACKEND_MODE=api`
+2. Set `VITE_API_BASE_URL=https://api.your-domain.com`
+3. Keep running `apps/api-go` service and MySQL
