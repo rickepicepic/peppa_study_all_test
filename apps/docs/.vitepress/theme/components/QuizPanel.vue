@@ -29,6 +29,7 @@ const lastProgressAt = ref<string | null>(null);
 const syncStatus = ref<'idle' | 'local' | 'cloud' | 'failed'>('idle');
 const syncErrorMessage = ref('');
 const authUser = ref<{ id: string; email: string } | null>(null);
+const authAccessToken = ref<string | undefined>(undefined);
 
 const backendMode = (import.meta.env.VITE_BACKEND_MODE as string | undefined) ?? 'local';
 const apiBaseURL = import.meta.env.VITE_API_BASE_URL as string | undefined;
@@ -63,19 +64,6 @@ const activeClient = backendMode === 'supabase' ? supabaseClient : apiClient;
 const isSupabaseMode = backendMode === 'supabase';
 const effectiveGuestId = supabaseGuestUserId;
 
-const supabaseSyncUserToken = computed(() => {
-  if (!isSupabaseMode) {
-    return undefined;
-  }
-  if (authEnabled && !authUser.value) {
-    return undefined;
-  }
-  if (authUser.value) {
-    return authUser.value.id;
-  }
-  return effectiveGuestId;
-});
-
 const supabaseSyncIdentityLabel = computed(() => {
   if (authUser.value) {
     return `${authUser.value.email} (${authUser.value.id})`;
@@ -86,9 +74,12 @@ const supabaseSyncIdentityLabel = computed(() => {
 async function refreshSupabaseUser() {
   if (!supabaseAuthClient) {
     authUser.value = null;
+    authAccessToken.value = undefined;
     return;
   }
   authUser.value = await getCurrentUser(supabaseAuthClient);
+  const { data } = await supabaseAuthClient.auth.getSession();
+  authAccessToken.value = data.session?.access_token;
 }
 
 const questions: QuizQuestion[] = [
@@ -213,13 +204,25 @@ async function submitQuiz() {
       mergeToken: `${panelId.value}-${updatedAt}`,
       token:
         backendMode === 'supabase'
-          ? supabaseSyncUserToken.value
+          ? authUser.value
+            ? authAccessToken.value
+            : undefined
           : authEnabled
             ? localStorage.getItem('nfp-auth-token') ?? undefined
             : undefined,
+      userId: backendMode === 'supabase' ? (authUser.value ? authUser.value.id : effectiveGuestId) : undefined,
       client: activeClient
     });
     syncStatus.value = result.mode;
+    if (result.mode === 'local') {
+      if (result.reason === 'auth-required') {
+        syncStatus.value = 'failed';
+        syncErrorMessage.value = '未登录，未执行云端写入。请先在右上角登录后再提交。';
+      } else if (result.reason === 'backend-unavailable') {
+        syncStatus.value = 'failed';
+        syncErrorMessage.value = '云端同步未启用或配置缺失（请检查 Supabase URL/Anon Key 与构建变量）。';
+      }
+    }
   } catch (error) {
     syncStatus.value = 'failed';
     syncErrorMessage.value = error instanceof Error ? error.message : '未知同步错误';
@@ -245,7 +248,8 @@ async function loadProgressFromCloud() {
     anonKey: supabaseAnonKey,
     userId,
     nodeId: panelId.value,
-    subject: 'network'
+    subject: 'network',
+    accessToken: authUser.value ? authAccessToken.value : undefined
   });
 
   if (!cloudProgress) {
@@ -263,13 +267,23 @@ async function loadProgressFromCloud() {
 onMounted(async () => {
   loadProgress();
   if (isSupabaseMode) {
-    await loadProgressFromCloud();
+    try {
+      await loadProgressFromCloud();
+    } catch (error) {
+      syncStatus.value = 'failed';
+      syncErrorMessage.value = error instanceof Error ? error.message : '加载云端进度失败';
+    }
   }
 });
 watch(panelId, async () => {
   loadProgress();
   if (isSupabaseMode) {
-    await loadProgressFromCloud();
+    try {
+      await loadProgressFromCloud();
+    } catch (error) {
+      syncStatus.value = 'failed';
+      syncErrorMessage.value = error instanceof Error ? error.message : '加载云端进度失败';
+    }
   }
 });
 </script>

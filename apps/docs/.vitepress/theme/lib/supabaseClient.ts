@@ -13,6 +13,7 @@ interface SupabaseReadOptions {
   userId: string;
   nodeId: string;
   subject?: string;
+  accessToken?: string;
 }
 
 export async function loadSupabaseNodeProgress(options: SupabaseReadOptions): Promise<SyncProgressItem | null> {
@@ -20,6 +21,9 @@ export async function loadSupabaseNodeProgress(options: SupabaseReadOptions): Pr
     auth: {
       persistSession: false,
       autoRefreshToken: false
+    },
+    global: {
+      headers: options.accessToken ? { Authorization: `Bearer ${options.accessToken}` } : {}
     }
   });
 
@@ -34,7 +38,11 @@ export async function loadSupabaseNodeProgress(options: SupabaseReadOptions): Pr
     .limit(1)
     .maybeSingle();
 
-  if (error || !data) {
+  if (error) {
+    throw new Error(`supabase read failed: ${error.message}`);
+  }
+
+  if (!data) {
     return null;
   }
 
@@ -46,20 +54,30 @@ export async function loadSupabaseNodeProgress(options: SupabaseReadOptions): Pr
 }
 
 export function createSupabaseProgressClient(options: SupabaseClientOptions): ApiClient {
-  const supabase = createClient(options.supabaseURL, options.anonKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false
-    }
-  });
+  const createSupabase = (accessToken?: string) =>
+    createClient(options.supabaseURL, options.anonKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      },
+      global: {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+      }
+    });
 
   return {
-    async syncProgress(items: SyncProgressItem[], _mergeToken: string, token?: string): Promise<SyncProgressResponse> {
+    async syncProgress(
+      items: SyncProgressItem[],
+      _mergeToken: string,
+      token?: string,
+      userId?: string
+    ): Promise<SyncProgressResponse> {
       if (items.length === 0) {
         return { merged: 0, items: [] };
       }
 
-      const userID = token && token.trim().length > 0 ? token : options.guestUserId;
+      const supabase = createSupabase(token);
+      const userID = userId && userId.trim().length > 0 ? userId : options.guestUserId;
 
       const rows = items.map((item) => ({
         user_id: userID,

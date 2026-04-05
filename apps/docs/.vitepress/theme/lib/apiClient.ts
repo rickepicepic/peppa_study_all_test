@@ -10,7 +10,7 @@ export interface SyncProgressResponse {
 }
 
 export interface ApiClient {
-  syncProgress(items: SyncProgressItem[], mergeToken: string, token?: string): Promise<SyncProgressResponse>;
+  syncProgress(items: SyncProgressItem[], mergeToken: string, token?: string, userId?: string): Promise<SyncProgressResponse>;
 }
 
 export function createApiClient(baseURL: string): ApiClient {
