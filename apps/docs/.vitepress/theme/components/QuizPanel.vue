@@ -3,7 +3,7 @@ import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { createProgressStore } from '../../../../../packages/quiz-core/src/progressStore';
 import { createApiClient } from '../lib/apiClient';
 import { deriveStableNumericUserId, getCurrentUser, getSupabaseAuthClient } from '../lib/supabaseAuth';
-import { createSupabaseProgressClient } from '../lib/supabaseClient';
+import { createSupabaseProgressClient, loadSupabaseNodeProgress } from '../lib/supabaseClient';
 import { syncProgress } from '../lib/syncBridge';
 
 type QuizType = 'single' | 'multiple' | 'boolean';
@@ -202,13 +202,45 @@ function loadProgress() {
   lastProgressAt.value = progress?.updatedAt ?? null;
 }
 
+async function loadProgressFromCloud() {
+  if (!isSupabaseMode || !supabaseURL || !supabaseAnonKey) {
+    return;
+  }
+
+  await refreshSupabaseUser();
+  const userId = authUser.value ? deriveStableNumericUserId(authUser.value.id) : effectiveGuestId;
+  const cloudProgress = await loadSupabaseNodeProgress({
+    supabaseURL,
+    anonKey: supabaseAnonKey,
+    userId,
+    nodeId: panelId.value,
+    subject: 'network'
+  });
+
+  if (!cloudProgress) {
+    return;
+  }
+
+  progressStore.saveNodeProgress(panelId.value, {
+    completed: cloudProgress.completed,
+    updatedAt: cloudProgress.updatedAt
+  });
+  lastProgressAt.value = cloudProgress.updatedAt;
+  syncStatus.value = 'cloud';
+}
+
 onMounted(async () => {
   loadProgress();
   if (isSupabaseMode) {
-    await refreshSupabaseUser();
+    await loadProgressFromCloud();
   }
 });
-watch(panelId, loadProgress);
+watch(panelId, async () => {
+  loadProgress();
+  if (isSupabaseMode) {
+    await loadProgressFromCloud();
+  }
+});
 </script>
 
 <template>
