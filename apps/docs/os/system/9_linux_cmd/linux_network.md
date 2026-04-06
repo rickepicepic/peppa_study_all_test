@@ -157,11 +157,3 @@ $ ethtool eth0 | grep Speed
 
 
 ---
-
-## 关注作者
-
-***哈喽，我是小林，就爱图解计算机基础，如果觉得文章对你有帮助，欢迎微信搜索「小林 coding」，关注后，回复「网络」再送你图解网络 PDF***
-
-![](https://cdn.jsdelivr.net/gh/xiaolincoder/ImageHost3@main/其他/公众号介绍.png)
-
-

@@ -197,9 +197,3 @@ MESI 协议，是已修改、独占、共享、已失效这四个状态的英文
 
 
 ---
-
-## 关注作者
-
-![](https://cdn.xiaolincoding.com/gh/xiaolincoder/ImageHost3@main/其他/公众号介绍.png)
-
-***哈喽，我是小林，就爱图解计算机基础，如果觉得文章对你有帮助，欢迎微信搜索「小林 coding」，关注后，回复「网络」再送你图解网络 PDF***
