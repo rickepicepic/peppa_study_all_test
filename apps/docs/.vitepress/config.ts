@@ -68,10 +68,11 @@ export default defineConfig({
           text: '面试速查',
           items: [
             { text: '概览', link: '/network/interview/' },
-            { text: 'TCP 高频问答', link: '/network/interview/tcp-faq' },
-            { text: 'HTTP/HTTPS 高频问答', link: '/network/interview/http-faq' },
-            { text: 'IP/UDP 与网络排障问答', link: '/network/interview/network-faq' },
-            { text: '3 分钟面试输出模板', link: '/network/interview/quick-template' }
+            { text: '网络模型面试题', link: '/network/interview/network-models' },
+            { text: '应用层面试题', link: '/network/interview/application-layer' },
+            { text: '传输层面试题', link: '/network/interview/transport-layer' },
+            { text: '网络场景面试题', link: '/network/interview/network-scenarios' },
+            { text: '网络攻击面试题', link: '/network/interview/network-security' }
           ]
         }
       ],
