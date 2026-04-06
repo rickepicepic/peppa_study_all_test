@@ -77,7 +77,11 @@ export default defineConfig({
       '/database/system/': [
         {
           text: '数据库 · 体系化主线',
-          items: [{ text: '概览', link: '/database/system/' }]
+          items: [
+            { text: '概览', link: '/database/system/' },
+            { text: 'MySQL', link: '/database/system/mysql/README' },
+            { text: 'Redis', link: '/database/system/redis/README' }
+          ]
         }
       ],
       '/database/interview/': [

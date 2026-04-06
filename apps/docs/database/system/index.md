@@ -1,12 +1,15 @@
 # 数据库 · 体系化主线
 
-此目录用于维护数据库的体系化学习内容。
+本页聚合两大数据库模块内容：MySQL 与 Redis。
 
-建议后续按章节新增页面，例如：
+## 模块目录
 
-- 关系模型与范式
-- 索引与查询优化
-- 事务与并发控制
-- 日志与恢复
+1. [MySQL 主线内容](/database/system/mysql/README)
+2. [Redis 主线内容](/database/system/redis/README)
+
+## 说明
+
+- 内容来源已同步自源目录 `peppa_study/mysql` 与 `peppa_study/redis`。
+- 目录下各专题文章可直接继续补充与改写。
 
 [前往数据库面试速查](/database/interview/)
