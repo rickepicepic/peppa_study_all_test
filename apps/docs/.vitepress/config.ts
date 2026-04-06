@@ -89,7 +89,18 @@ export default defineConfig({
       '/os/system/': [
         {
           text: '操作系统 · 体系化主线',
-          items: [{ text: '概览', link: '/os/system/' }]
+          items: [
+            { text: '概览', link: '/os/system/' },
+            { text: '硬件基础', link: '/os/system/hardware' },
+            { text: '操作系统结构', link: '/os/system/os-structure' },
+            { text: '内存管理', link: '/os/system/memory' },
+            { text: '进程与线程', link: '/os/system/process' },
+            { text: '调度', link: '/os/system/schedule' },
+            { text: '文件系统', link: '/os/system/file-system' },
+            { text: '设备管理', link: '/os/system/device' },
+            { text: '网络系统与高性能 I/O', link: '/os/system/network-system' },
+            { text: 'Linux 命令与观测', link: '/os/system/linux-command' }
+          ]
         }
       ],
       '/os/interview/': [
