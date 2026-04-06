@@ -1,18 +1,19 @@
-# 面试速查
+# 网络面试题
 
-聚焦高频问答与高价值表达模板，适合面试前 15-30 分钟集中复盘。
+本页按面试最常见的五个模块组织：网络模型、应用层、传输层、网络场景、网络攻击。
 
-## 速查目录
+## 模块目录
 
-1. [TCP 高频问答](/network/interview/tcp-faq)
-2. [HTTP/HTTPS 高频问答](/network/interview/http-faq)
-3. [IP/UDP 与网络排障问答](/network/interview/network-faq)
-4. [3 分钟面试输出模板](/network/interview/quick-template)
+1. [网络模型面试题](/network/interview/network-models)
+2. [应用层面试题](/network/interview/application-layer)
+3. [传输层面试题](/network/interview/transport-layer)
+4. [网络场景面试题](/network/interview/network-scenarios)
+5. [网络攻击面试题](/network/interview/network-security)
 
 ## 使用建议
 
-- 先看“问题关键句”，再看“扩展说明”。
-- 每题至少用自己的话口述一遍。
-- 不会时回跳主线页面补全原理。
+- 先按模块过一遍“关键句”，再展开“扩展说明”。
+- 每个模块至少挑 3 题做口述，训练结构化表达。
+- 场景题建议按“现象 -> 分层排查 -> 证据 -> 结论”输出。
 
 [回到体系化主线](/network/system/)
