@@ -1,12 +1,16 @@
 # Linux · 体系化主线
 
-此目录用于维护 Linux 的体系化学习内容。
+本页内容已同步自 `peppa_study/linux`，并按模块组织为 Linux 基础、命令体系、Shell 编程。
 
-建议后续按章节新增页面，例如：
+## 模块目录
 
-- 常用命令体系
-- 权限与用户
-- 进程与服务管理
-- 网络与性能分析
+1. [Linux 基础](/linux/system/linux-core)
+2. [Linux 命令体系](/linux/system/linux-command-system)
+3. [Shell 编程](/linux/system/shell-programming)
+
+## 说明
+
+- 模块正文来源于 `linux/linux`、`linux/command`、`linux/shell`。
+- 你可以直接在当前目录继续补充和重组内容。
 
 [前往 Linux 面试速查](/linux/interview/)

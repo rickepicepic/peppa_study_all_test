@@ -116,7 +116,12 @@ export default defineConfig({
       '/linux/system/': [
         {
           text: 'Linux · 体系化主线',
-          items: [{ text: '概览', link: '/linux/system/' }]
+          items: [
+            { text: '概览', link: '/linux/system/' },
+            { text: 'Linux 基础', link: '/linux/system/linux-core' },
+            { text: 'Linux 命令体系', link: '/linux/system/linux-command-system' },
+            { text: 'Shell 编程', link: '/linux/system/shell-programming' }
+          ]
         }
       ],
       '/linux/interview/': [
