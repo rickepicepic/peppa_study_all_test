@@ -2,35 +2,44 @@
 layout: home
 hero:
   name: 佩奇·李的计算机基础学习平台
-  text: 计算机网络 · 首期跑通
-  tagline: 体系化主线 + 面试速查双轨学习，先把网络模块练透
+  text: 六大模块学习框架
+  tagline: 体系化主线 + 面试速查双轨结构已就绪，内容可按目录持续补充
   actions:
     - theme: brand
-      text: 体系化主线
+      text: 进入体系化主线
       link: /network/system/
     - theme: alt
-      text: 面试速查
+      text: 进入面试速查
       link: /network/interview/
   image:
     src: /network-hero.svg
     alt: 网络学习路线图
 features:
-  - title: 体系化主线
-    details: 从分层模型到 TCP/IP、HTTP 演进，按认知依赖顺序搭建完整框架。
-  - title: 面试速查
-    details: 高频问答 + 表达模板，帮你把知识转成面试可输出的话术。
-  - title: 学完可验证
-    details: 关键章节带测验与复盘节点，确保不是“看懂了”，而是“答得出”。
+  - title: 双轨结构
+    details: 每个学科统一分为“体系化主线”和“面试速查”，便于长期维护。
+  - title: 六大学科
+    details: 已覆盖计网、数据库、操作系统、Linux、数据结构、云原生技术。
+  - title: 统一目录
+    details: 所有内容按固定目录组织，你可以直接按模块逐步填充。
 ---
 
-## 本期学习地图
+## 学习模块入口
 
-- [体系化主线](/network/system/)
-- [面试速查](/network/interview/)
+- [计算机网络 · 体系化主线](/network/system/)
+- [计算机网络 · 面试速查](/network/interview/)
+- [数据库 · 体系化主线](/database/system/)
+- [数据库 · 面试速查](/database/interview/)
+- [操作系统 · 体系化主线](/os/system/)
+- [操作系统 · 面试速查](/os/interview/)
+- [Linux · 体系化主线](/linux/system/)
+- [Linux · 面试速查](/linux/interview/)
+- [数据结构 · 体系化主线](/data-structure/system/)
+- [数据结构 · 面试速查](/data-structure/interview/)
+- [云原生技术 · 体系化主线](/cloud-native/system/)
+- [云原生技术 · 面试速查](/cloud-native/interview/)
 
-## 网络部分目标
+## 维护说明
 
-1. 说清楚一次 HTTP 请求在协议栈中的分层流转。
-2. 解释 TCP 建连、可靠传输、流量控制、拥塞控制的关系。
-3. 讲明白 IP/ARP/DNS/路由器分别在解决什么问题。
-4. 对比 HTTP1.1/2/3 与 HTTPS/TLS 的核心改进点。
+1. 体系化主线：按“原理 -> 机制 -> 实践”顺序补充。
+2. 面试速查：按“高频问题 -> 关键句 -> 扩展说明”补充。
+3. 具体放置目录见项目根目录 `README.md`。
