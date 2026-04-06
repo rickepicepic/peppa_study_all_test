@@ -1,21 +1,17 @@
 # 体系化主线
 
-围绕协议分层、核心机制和全链路流程逐步构建网络知识框架，按顺序学习效果最佳。
+围绕你的新学习结构，当前网络主线拆分为四个模块：OSI 七层模型、应用层协议、传输层协议、网络层协议。
 
-## 学习顺序
+## 模块目录
 
-1. [分层模型与核心协议](/network/system/layer-models)
-2. [一次网络请求全链路](/network/system/request-lifecycle)
-3. [TCP 三次握手（含测验）](/network/system/tcp-handshake)
-4. [TCP 可靠传输与拥塞控制](/network/system/tcp-reliability)
-5. [IP、ARP、DNS 与路由转发](/network/system/ip-routing)
-6. [HTTP 演进与 HTTPS/TLS](/network/system/http-evolution)
+1. [OSI 七层模型](/network/system/osi-model)
+2. [应用层协议](/network/system/application-protocols)
+3. [传输层协议](/network/system/transport-protocols)
+4. [网络层协议](/network/system/network-layer-protocols)
 
-## 本阶段目标
+## 使用方式
 
-- 能按层讲清协议职责与典型协议。
-- 能描述“浏览器输入 URL 到页面展示”的关键路径。
-- 能解释 TCP 可靠性机制与性能优化手段。
-- 能用面试语言比较 HTTP1.1/2/3 与 HTTPS。
+- 每个模块先补“核心概念”，再补“常见协议”和“高频面试点”。
+- 建议每个模块保持统一结构，便于后续扩展与复习。
 
 [切换到面试速查](/network/interview/)

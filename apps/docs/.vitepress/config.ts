@@ -54,12 +54,10 @@ export default defineConfig({
           text: '体系化主线',
           items: [
             { text: '概览', link: '/network/system/' },
-            { text: '分层模型与核心协议', link: '/network/system/layer-models' },
-            { text: '一次网络请求全链路', link: '/network/system/request-lifecycle' },
-            { text: 'TCP 三次握手（含测验）', link: '/network/system/tcp-handshake' },
-            { text: 'TCP 可靠传输与拥塞控制', link: '/network/system/tcp-reliability' },
-            { text: 'IP、ARP、DNS 与路由转发', link: '/network/system/ip-routing' },
-            { text: 'HTTP 演进与 HTTPS/TLS', link: '/network/system/http-evolution' }
+            { text: 'OSI 七层模型', link: '/network/system/osi-model' },
+            { text: '应用层协议', link: '/network/system/application-protocols' },
+            { text: '传输层协议', link: '/network/system/transport-protocols' },
+            { text: '网络层协议', link: '/network/system/network-layer-protocols' }
           ]
         }
       ],
