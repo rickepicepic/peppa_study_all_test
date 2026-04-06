@@ -33,7 +33,7 @@ Redis 的键值对中的 key 就是字符串对象，而 **value 可以是字符
 
 举个例子，我这里列出几种 Redis 新增键值对的命令：
 
-```redis
+```bash
 > SET name "xiaolincoding"
 OK
 
