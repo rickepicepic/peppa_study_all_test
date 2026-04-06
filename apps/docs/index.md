@@ -1,7 +1,7 @@
 ---
 layout: home
 hero:
-  name: 佩奇·李爱学习
+  name: 佩奇·李
   text: 计算机基础技术学习平台
   tagline: 体系化主线 + 面试速查双轨结构
   actions:
@@ -17,7 +17,7 @@ hero:
 features:
   - title: 双轨结构
     details: 每个学科统一分为“体系化主线”和“面试速查”，便于长期维护。
-  - title: 六大学科
+  - title: 健全体系
     details: 已覆盖计网、数据库、操作系统、Linux、数据结构、云原生技术。
   - title: 统一目录
     details: 所有内容按固定目录组织，清晰明了
