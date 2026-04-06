@@ -7,10 +7,10 @@ hero:
   actions:
     - theme: brand
       text: 进入体系化主线
-      link: /network/system/
+      link: /system/
     - theme: alt
       text: 进入面试速查
-      link: /network/interview/
+      link: /interview/
   image:
     src: /network-hero.svg
     alt: 网络学习路线图
@@ -25,18 +25,73 @@ features:
 
 ## 学习模块入口
 
-- [计算机网络 · 体系化主线](/network/system/)
-- [计算机网络 · 面试速查](/network/interview/)
-- [数据库 · 体系化主线](/database/system/)
-- [数据库 · 面试速查](/database/interview/)
-- [操作系统 · 体系化主线](/os/system/)
-- [操作系统 · 面试速查](/os/interview/)
-- [Linux · 体系化主线](/linux/system/)
-- [Linux · 面试速查](/linux/interview/)
-- [数据结构 · 体系化主线](/data-structure/system/)
-- [数据结构 · 面试速查](/data-structure/interview/)
-- [云原生技术 · 体系化主线](/cloud-native/system/)
-- [云原生技术 · 面试速查](/cloud-native/interview/)
+<div class="subject-grid">
+  <a class="subject-card" href="/peppa_study_all_test/network/system/">
+    <h3>计算机网络</h3>
+    <p>分层模型、TCP/IP、HTTP 与网络排障。</p>
+    <span>进入体系化主线</span>
+  </a>
+  <a class="subject-card" href="/peppa_study_all_test/network/interview/">
+    <h3>计算机网络</h3>
+    <p>高频问答与 3 分钟表达模板。</p>
+    <span>进入面试速查</span>
+  </a>
+
+  <a class="subject-card" href="/peppa_study_all_test/database/system/">
+    <h3>数据库</h3>
+    <p>模型、索引、事务、并发与性能优化。</p>
+    <span>进入体系化主线</span>
+  </a>
+  <a class="subject-card" href="/peppa_study_all_test/database/interview/">
+    <h3>数据库</h3>
+    <p>事务隔离、索引失效、锁与死锁速查。</p>
+    <span>进入面试速查</span>
+  </a>
+
+  <a class="subject-card" href="/peppa_study_all_test/os/system/">
+    <h3>操作系统</h3>
+    <p>进程线程、调度、内存管理与文件系统。</p>
+    <span>进入体系化主线</span>
+  </a>
+  <a class="subject-card" href="/peppa_study_all_test/os/interview/">
+    <h3>操作系统</h3>
+    <p>经典概念问答与场景化表达。</p>
+    <span>进入面试速查</span>
+  </a>
+
+  <a class="subject-card" href="/peppa_study_all_test/linux/system/">
+    <h3>Linux</h3>
+    <p>命令体系、服务管理、网络与性能诊断。</p>
+    <span>进入体系化主线</span>
+  </a>
+  <a class="subject-card" href="/peppa_study_all_test/linux/interview/">
+    <h3>Linux</h3>
+    <p>实战型排障问答与高频命令速查。</p>
+    <span>进入面试速查</span>
+  </a>
+
+  <a class="subject-card" href="/peppa_study_all_test/data-structure/system/">
+    <h3>数据结构</h3>
+    <p>线性结构、树图、排序查找与复杂度。</p>
+    <span>进入体系化主线</span>
+  </a>
+  <a class="subject-card" href="/peppa_study_all_test/data-structure/interview/">
+    <h3>数据结构</h3>
+    <p>算法题场景下的结构选型与表达。</p>
+    <span>进入面试速查</span>
+  </a>
+
+  <a class="subject-card" href="/peppa_study_all_test/cloud-native/system/">
+    <h3>云原生技术</h3>
+    <p>容器、Kubernetes、可观测性与发布。</p>
+    <span>进入体系化主线</span>
+  </a>
+  <a class="subject-card" href="/peppa_study_all_test/cloud-native/interview/">
+    <h3>云原生技术</h3>
+    <p>云原生架构与运维问题速查。</p>
+    <span>进入面试速查</span>
+  </a>
+</div>
 
 ## 维护说明
 

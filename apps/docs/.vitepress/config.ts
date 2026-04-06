@@ -17,10 +17,38 @@ export default defineConfig({
           { text: '云原生技术', link: '/cloud-native/system/' }
         ]
       },
-      { text: '体系化主线', link: '/network/system/' },
-      { text: '面试速查', link: '/network/interview/' }
+      { text: '体系化主线', link: '/system/' },
+      { text: '面试速查', link: '/interview/' }
     ],
     sidebar: {
+      '/system/': [
+        {
+          text: '体系化主线总览',
+          items: [
+            { text: '总览', link: '/system/' },
+            { text: '计算机网络', link: '/network/system/' },
+            { text: '数据库', link: '/database/system/' },
+            { text: '操作系统', link: '/os/system/' },
+            { text: 'Linux', link: '/linux/system/' },
+            { text: '数据结构', link: '/data-structure/system/' },
+            { text: '云原生技术', link: '/cloud-native/system/' }
+          ]
+        }
+      ],
+      '/interview/': [
+        {
+          text: '面试速查总览',
+          items: [
+            { text: '总览', link: '/interview/' },
+            { text: '计算机网络', link: '/network/interview/' },
+            { text: '数据库', link: '/database/interview/' },
+            { text: '操作系统', link: '/os/interview/' },
+            { text: 'Linux', link: '/linux/interview/' },
+            { text: '数据结构', link: '/data-structure/interview/' },
+            { text: '云原生技术', link: '/cloud-native/interview/' }
+          ]
+        }
+      ],
       '/network/system/': [
         {
           text: '体系化主线',
