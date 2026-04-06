@@ -12,7 +12,7 @@ hero:
       text: 进入面试速查
       link: /interview/
   image:
-    src: /pig_1.gif
+    src: /pig_2.gif
     alt: 佩奇学习动图
 features:
   - title: 双轨结构
