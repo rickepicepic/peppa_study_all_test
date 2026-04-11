@@ -11,6 +11,9 @@ hero:
     - theme: alt
       text: 进入面试速查
       link: /interview/
+    - theme: alt
+      text: 进入趣味小游戏
+      link: /funny_game/index.html
   image:
     src: /pig_1.gif
     alt: 佩奇学习动图
@@ -90,6 +93,16 @@ features:
     <h3>云原生技术</h3>
     <p>云原生架构与运维问题速查。</p>
     <span>进入面试速查</span>
+  </a>
+</div>
+
+## 趣味专区
+
+<div class="subject-grid">
+  <a class="subject-card" href="/peppa_study_all_test/funny_game/index.html">
+    <h3>接食物小游戏</h3>
+    <p>自定义素材 + 道具机制 + 彩蛋布布大王，边玩边放松。</p>
+    <span>点击进入小游戏</span>
   </a>
 </div>
 

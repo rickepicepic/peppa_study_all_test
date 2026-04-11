@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>接食物小游戏</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section id="toast-layer" class="toast-layer" aria-live="polite"></section>
+      <header class="hud" id="hud" aria-live="polite"></header>
+      <section class="canvas-wrap">
+        <canvas id="game-canvas" width="420" height="700" aria-label="接食物游戏画布"></canvas>
+        <img id="player-sprite" class="player-sprite" alt="玩家角色" />
+        <section id="overlay" class="overlay" aria-live="polite"></section>
+      </section>
+      <section class="touch-controls" id="touch-controls" aria-label="触屏控制区">
+        <button id="btn-left" class="control-btn" aria-label="向左移动">左</button>
+        <button id="btn-right" class="control-btn" aria-label="向右移动">右</button>
+      </section>
+    </main>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

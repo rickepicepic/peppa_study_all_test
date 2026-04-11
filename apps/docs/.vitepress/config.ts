@@ -17,6 +17,7 @@ export default defineConfig({
           { text: '云原生技术', link: '/cloud-native/system/' }
         ]
       },
+      { text: '趣味小游戏', link: '/funny_game/index.html' },
       { text: '体系化主线', link: '/system/' },
       { text: '面试速查', link: '/interview/' }
     ],
